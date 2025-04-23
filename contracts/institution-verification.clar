@@ -1,30 +1,72 @@
+;; Institution Verification Contract
+;; Validates legitimate educational entities
 
-;; title: institution-verification
-;; version:
-;; summary:
-;; description:
+(define-data-var admin principal tx-sender)
 
-;; traits
-;;
+;; Map to store verified institutions
+(define-map verified-institutions
+  principal
+  {
+    name: (string-ascii 100),
+    website: (string-ascii 100),
+    verified: bool,
+    verification-date: uint
+  }
+)
 
-;; token definitions
-;;
+;; Error codes
+(define-constant ERR_NOT_ADMIN u100)
+(define-constant ERR_ALREADY_VERIFIED u101)
+(define-constant ERR_NOT_FOUND u102)
 
-;; constants
-;;
+;; Check if caller is admin
+(define-private (is-admin)
+  (is-eq tx-sender (var-get admin))
+)
 
-;; data vars
-;;
+;; Add a new institution
+(define-public (add-institution (institution-principal principal) (name (string-ascii 100)) (website (string-ascii 100)))
+  (begin
+    (asserts! (is-admin) (err ERR_NOT_ADMIN))
+    (asserts! (is-none (map-get? verified-institutions institution-principal)) (err ERR_ALREADY_VERIFIED))
 
-;; data maps
-;;
+    (map-set verified-institutions
+      institution-principal
+      {
+        name: name,
+        website: website,
+        verified: true,
+        verification-date: block-height
+      }
+    )
+    (ok true)
+  )
+)
 
-;; public functions
-;;
+;; Revoke institution verification
+(define-public (revoke-institution (institution-principal principal))
+  (begin
+    (asserts! (is-admin) (err ERR_NOT_ADMIN))
+    (asserts! (is-some (map-get? verified-institutions institution-principal)) (err ERR_NOT_FOUND))
 
-;; read only functions
-;;
+    (map-delete verified-institutions institution-principal)
+    (ok true)
+  )
+)
 
-;; private functions
-;;
+;; Check if an institution is verified
+(define-read-only (is-verified-institution (institution-principal principal))
+  (match (map-get? verified-institutions institution-principal)
+    institution (ok (get verified institution))
+    (err ERR_NOT_FOUND)
+  )
+)
 
+;; Transfer admin rights
+(define-public (transfer-admin (new-admin principal))
+  (begin
+    (asserts! (is-admin) (err ERR_NOT_ADMIN))
+    (var-set admin new-admin)
+    (ok true)
+  )
+)
