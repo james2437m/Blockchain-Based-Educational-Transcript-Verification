@@ -9,3 +9,7 @@ W
 'contracts/institution-verification.clar,d/d/dd6f29d581e4fc80d30e9eb12d64363ad190bf89
 V
 &tests/institution-verification.test.ts,5/e/5edadce64a6eee8f2384257efbac2d5b1f7dd860
+O
+contracts/student-identity.clar,c/b/cb2d62c7d9b8b5ae82f034699a65a6c6c5005dca
+N
+tests/student-identity.test.ts,9/9/99659a94e339784c0d8374d3606b3dd7820e66bd
